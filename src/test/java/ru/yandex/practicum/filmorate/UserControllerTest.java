@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate;
 
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 
@@ -24,7 +26,7 @@ class UserControllerTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testuser");
-        user.setName("Test User");
+        user.setName("Тестовый пользователь");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
         User result = userController.addUser(user);
@@ -32,7 +34,7 @@ class UserControllerTest {
         assertEquals(1, result.getId());
         assertEquals("test@example.com", result.getEmail());
         assertEquals("testuser", result.getLogin());
-        assertEquals("Test User", result.getName());
+        assertEquals("Тестовый пользователь", result.getName());
     }
 
     @Test
@@ -54,19 +56,19 @@ class UserControllerTest {
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userController.addUser(user));
-        assertEquals("Электронная почта не может быть пустой и должна содержать символ '@'", exception.getMessage());
+        ValidationException exception = assertThrows(ValidationException.class, () -> userController.addUser(user));
+        assertEquals("Электронная почта обязательна и должна содержать символ '@'.", exception.getMessage());
     }
 
     @Test
     void addUser_ShouldThrowExceptionForEmptyLogin() {
         User user = new User();
         user.setEmail("test@example.com");
-        user.setLogin("");
+        user.setLogin(""); // Пустой логин
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userController.addUser(user));
-        assertEquals("Логин не может быть пустым и содержать пробелы", exception.getMessage());
+        ValidationException exception = assertThrows(ValidationException.class, () -> userController.addUser(user));
+        assertEquals("Логин не может быть пустым или содержать пробелы.", exception.getMessage());
     }
 
     @Test
@@ -74,7 +76,7 @@ class UserControllerTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testuser");
-        user.setName("Test User");
+        user.setName("Тестовый пользователь");
         user.setBirthday(LocalDate.of(1990, 1, 1));
         userController.addUser(user);
 
@@ -82,7 +84,7 @@ class UserControllerTest {
         updatedUser.setId(1);
         updatedUser.setEmail("updated@example.com");
         updatedUser.setLogin("updateduser");
-        updatedUser.setName("Updated Name");
+        updatedUser.setName("Обновлённое имя");
         updatedUser.setBirthday(LocalDate.of(1995, 5, 20));
 
         User result = userController.updateUser(updatedUser);
@@ -90,18 +92,18 @@ class UserControllerTest {
         assertEquals(1, result.getId());
         assertEquals("updated@example.com", result.getEmail());
         assertEquals("updateduser", result.getLogin());
-        assertEquals("Updated Name", result.getName());
+        assertEquals("Обновлённое имя", result.getName());
     }
 
     @Test
     void updateUser_ShouldThrowExceptionForNonExistentUser() {
         User user = new User();
-        user.setId(999); // Не существующий ID
+        user.setId(999); // Несуществующий ID
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userController.updateUser(user));
-        assertEquals("Пользователь с id 999 не найден", exception.getMessage());
+        ValidationException exception = assertThrows(ValidationException.class, () -> userController.updateUser(user));
+        assertEquals("Пользователь с id 999 не найден.", exception.getMessage());
     }
 }

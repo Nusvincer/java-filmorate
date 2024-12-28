@@ -30,3 +30,4 @@ class FilmorateApplicationTests {
 		assertNotNull(filmController, "FilmController должен быть доступен как Spring Bean.");
 	}
 }
+
