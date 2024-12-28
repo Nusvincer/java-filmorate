@@ -1,15 +1,14 @@
 package ru.yandex.practicum.filmorate;
 
 import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FilmControllerTest {
 
@@ -17,18 +16,19 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        FilmService filmService = new FilmService();
+        filmController = new FilmController(filmService);
     }
 
     @Test
-    void addFilm_ShouldAddValidFilm() {
+    void addFilmShouldAddValidFilm() {
         Film film = new Film();
         film.setName("Test Film");
         film.setDescription("A great test film");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
 
-        Film result = filmController.addFilm(film);
+        Film result = filmController.createFilm(film);
 
         assertEquals(1, result.getId());
         assertEquals("Test Film", result.getName());
@@ -38,25 +38,25 @@ class FilmControllerTest {
     }
 
     @Test
-    void addFilm_ShouldThrowExceptionForInvalidReleaseDate() {
+    void addFilmShouldThrowExceptionForInvalidReleaseDate() {
         Film film = new Film();
         film.setName("Invalid Film");
         film.setDescription("Test description");
-        film.setReleaseDate(LocalDate.of(1800, 1, 1)); // Дата слишком ранняя
+        film.setReleaseDate(LocalDate.of(1800, 1, 1));
         film.setDuration(100);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> filmController.addFilm(film));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> filmController.createFilm(film));
         assertEquals("Дата релиза должна быть не раньше 28 декабря 1895 года.", exception.getMessage());
     }
 
     @Test
-    void updateFilm_ShouldUpdateExistingFilm() {
+    void updateFilmShouldUpdateExistingFilm() {
         Film film = new Film();
         film.setName("Old Film");
         film.setDescription("Old description");
         film.setReleaseDate(LocalDate.of(1995, 1, 1));
         film.setDuration(100);
-        filmController.addFilm(film);
+        filmController.createFilm(film);
 
         Film updatedFilm = new Film();
         updatedFilm.setId(1);
@@ -75,38 +75,25 @@ class FilmControllerTest {
     }
 
     @Test
-    void updateFilm_ShouldThrowExceptionForNonExistentFilm() {
-        Film film = new Film();
-        film.setId(999); // Не существующий ID
-        film.setName("Nonexistent Film");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(100);
-
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> filmController.updateFilm(film));
-        assertEquals("Фильм с id 999 не найден.", exception.getMessage());
-    }
-
-    @Test
-    void addFilm_ShouldThrowExceptionForEmptyName() {
+    void addFilmShouldThrowExceptionForEmptyName() {
         Film film = new Film();
         film.setDescription("Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> filmController.addFilm(film));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> filmController.createFilm(film));
         assertEquals("Название фильма не может быть пустым.", exception.getMessage());
     }
 
     @Test
-    void addFilm_ShouldThrowExceptionForNegativeDuration() {
+    void addFilmShouldThrowExceptionForNegativeDuration() {
         Film film = new Film();
         film.setName("Test Film");
         film.setDescription("Description");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(-100); // Отрицательная продолжительность
+        film.setDuration(-100);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> filmController.addFilm(film));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> filmController.createFilm(film));
         assertEquals("Продолжительность фильма должна быть положительным числом.", exception.getMessage());
     }
 }

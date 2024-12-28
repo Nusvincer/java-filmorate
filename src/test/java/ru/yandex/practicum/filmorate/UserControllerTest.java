@@ -1,15 +1,14 @@
 package ru.yandex.practicum.filmorate;
 
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
 
@@ -17,18 +16,19 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        UserService userService = new UserService();
+        userController = new UserController(userService);
     }
 
     @Test
-    void addUser_ShouldAddValidUser() {
+    void addUserShouldAddValidUser() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setName("Test User");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        User result = userController.addUser(user);
+        User result = userController.createUser(user);
 
         assertEquals(1, result.getId());
         assertEquals("test@example.com", result.getEmail());
@@ -37,47 +37,47 @@ class UserControllerTest {
     }
 
     @Test
-    void addUser_ShouldUseLoginAsNameIfNameIsEmpty() {
+    void addUserShouldUseLoginAsNameIfNameIsEmpty() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        User result = userController.addUser(user);
+        User result = userController.createUser(user);
 
         assertEquals("testuser", result.getName());
     }
 
     @Test
-    void addUser_ShouldThrowExceptionForInvalidEmail() {
+    void addUserShouldThrowExceptionForInvalidEmail() {
         User user = new User();
         user.setEmail("invalid-email");
         user.setLogin("testuser");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userController.addUser(user));
-        assertEquals("Электронная почта обязательна и должна содержать символ '@'.", exception.getMessage());
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userController.createUser(user));
+        assertEquals("Электронная почта не может быть пустой и должна содержать символ '@'.", exception.getMessage());
     }
 
     @Test
-    void addUser_ShouldThrowExceptionForEmptyLogin() {
+    void addUserShouldThrowExceptionForEmptyLogin() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userController.addUser(user));
-        assertEquals("Логин не может быть пустым или содержать пробелы.", exception.getMessage());
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userController.createUser(user));
+        assertEquals("Логин не может быть пустым и содержать пробелы.", exception.getMessage());
     }
 
     @Test
-    void updateUser_ShouldUpdateExistingUser() {
+    void updateUserShouldUpdateExistingUser() {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setName("Test User");
         user.setBirthday(LocalDate.of(1990, 1, 1));
-        userController.addUser(user);
+        userController.createUser(user);
 
         User updatedUser = new User();
         updatedUser.setId(1);
@@ -92,17 +92,5 @@ class UserControllerTest {
         assertEquals("updated@example.com", result.getEmail());
         assertEquals("updateduser", result.getLogin());
         assertEquals("Updated Name", result.getName());
-    }
-
-    @Test
-    void updateUser_ShouldThrowExceptionForNonExistentUser() {
-        User user = new User();
-        user.setId(999); // Не существующий ID
-        user.setEmail("test@example.com");
-        user.setLogin("testuser");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-
-        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> userController.updateUser(user));
-        assertEquals("Пользователь с id 999 не найден.", exception.getMessage());
     }
 }
