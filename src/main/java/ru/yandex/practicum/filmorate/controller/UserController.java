@@ -1,10 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +18,11 @@ public class UserController {
 
     @PostMapping
     public User addUser(@RequestBody User user) {
-        user.validate();
+        validateUser(user);
         user.setId(currentId++);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
         users.add(user);
         log.info("Добавлен пользователь: {}", user);
         return user;
@@ -26,10 +30,13 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@RequestBody User user) {
-        user.validate();
-        boolean removed = users.removeIf(u -> u.getId() == user.getId());
-        if (!removed) {
-            throw new ValidationException("Пользователь с id " + user.getId() + " не найден.");
+        validateUser(user);
+        boolean userExists = users.removeIf(u -> u.getId() == user.getId());
+        if (!userExists) {
+            throw new ResourceNotFoundException("Пользователь с id " + user.getId() + " не найден.");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
         users.add(user);
         log.info("Обновлён пользователь: {}", user);
@@ -38,7 +45,19 @@ public class UserController {
 
     @GetMapping
     public List<User> getAllUsers() {
-        log.info("Получение списка пользователей.");
+        log.info("Получение списка пользователей");
         return users;
+    }
+
+    private void validateUser(User user) {
+        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+            throw new IllegalArgumentException("Электронная почта обязательна и должна содержать символ '@'.");
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+            throw new IllegalArgumentException("Логин не может быть пустым или содержать пробелы.");
+        }
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Дата рождения не может быть в будущем.");
+        }
     }
 }
