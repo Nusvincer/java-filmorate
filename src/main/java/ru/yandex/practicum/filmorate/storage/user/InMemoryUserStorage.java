@@ -15,6 +15,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addUser(User user) {
+        user.validate();
         user.setId(currentId++);
         users.put(user.getId(), user);
         return user;
@@ -25,6 +26,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (!users.containsKey(user.getId())) {
             throw new IllegalArgumentException("Пользователь с таким ID не найден.");
         }
+        user.validate();
         users.put(user.getId(), user);
         return user;
     }

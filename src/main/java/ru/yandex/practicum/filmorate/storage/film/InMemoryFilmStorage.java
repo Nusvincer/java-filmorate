@@ -15,6 +15,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
+        film.validate();
         film.setId(currentId++);
         films.put(film.getId(), film);
         return film;
@@ -25,6 +26,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (!films.containsKey(film.getId())) {
             throw new IllegalArgumentException("Фильм с таким ID не найден.");
         }
+        film.validate();
         films.put(film.getId(), film);
         return film;
     }

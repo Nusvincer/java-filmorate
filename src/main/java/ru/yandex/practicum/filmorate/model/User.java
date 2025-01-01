@@ -1,9 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@Data
 public class User {
     private int id;
     private String email;
@@ -14,15 +17,15 @@ public class User {
 
     public void validate() {
         if (email == null || !email.contains("@")) {
-            throw new IllegalArgumentException("Электронная почта не может быть пустой и должна содержать символ '@'.");
+            throw new IllegalArgumentException("Электронная почта должна содержать символ '@'.");
         }
         if (login == null || login.isBlank() || login.contains(" ")) {
-            throw new IllegalArgumentException("Логин не может быть пустым и содержать пробелы.");
+            throw new IllegalArgumentException("Логин не может быть пустым или содержать пробелы.");
         }
         if (name == null || name.isBlank()) {
             name = login;
         }
-        if (birthday.isAfter(LocalDate.now())) {
+        if (birthday == null || birthday.isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("Дата рождения не может быть в будущем.");
         }
     }
@@ -36,47 +39,7 @@ public class User {
     }
 
     public Set<Integer> getFriends() {
-        return friends;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public LocalDate getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(LocalDate birthday) {
-        this.birthday = birthday;
+        return new HashSet<>(friends);
     }
 }
 

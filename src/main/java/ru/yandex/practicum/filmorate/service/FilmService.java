@@ -24,20 +24,28 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
+        film.validate();
         return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
+        film.validate();
         return filmStorage.updateFilm(film);
     }
 
     public void addLike(int filmId, int userId) {
         Film film = filmStorage.getFilm(filmId);
+        if (film == null) {
+            throw new IllegalArgumentException("Фильм с таким ID не найден.");
+        }
         film.addLike(userId);
     }
 
     public void removeLike(int filmId, int userId) {
         Film film = filmStorage.getFilm(filmId);
+        if (film == null) {
+            throw new IllegalArgumentException("Фильм с таким ID не найден.");
+        }
         film.removeLike(userId);
     }
 
