@@ -1,13 +1,27 @@
 package ru.yandex.practicum.filmorate.model;
 
-import java.time.LocalDate;
+import lombok.Data;
 
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
+@Data
 public class Film {
     private int id;
     private String name;
     private String description;
     private LocalDate releaseDate;
     private int duration;
+    private final Set<Integer> likes = new HashSet<>();
+
+    public Film(int id, String name, String description, LocalDate releaseDate, int duration) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+    }
 
     public void validate() {
         if (name == null || name.isBlank()) {
@@ -15,6 +29,9 @@ public class Film {
         }
         if (description != null && description.length() > 200) {
             throw new IllegalArgumentException("Описание не может быть длиннее 200 символов.");
+        }
+        if (releaseDate == null) {
+            throw new IllegalArgumentException("Дата релиза не может быть пустой.");
         }
         if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
             throw new IllegalArgumentException("Дата релиза должна быть не раньше 28 декабря 1895 года.");
@@ -24,44 +41,16 @@ public class Film {
         }
     }
 
-    public int getId() {
-        return id;
+    public void addLike(int userId) {
+        likes.add(userId);
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void removeLike(int userId) {
+        likes.remove(userId);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDate getReleaseDate() {
-        return releaseDate;
-    }
-
-    public void setReleaseDate(LocalDate releaseDate) {
-        this.releaseDate = releaseDate;
-    }
-
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public int getLikeCount() {
+        return likes.size();
     }
 }
 
