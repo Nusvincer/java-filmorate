@@ -13,13 +13,19 @@ public class ErrorHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleResourceNotFoundException(ResourceNotFoundException e) {
-        return Map.of("error", e.getMessage());
+        return Map.of("error", "Ресурс не найден", "message", e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleIllegalArgumentException(IllegalArgumentException e) {
-        return Map.of("error", e.getMessage());
+        return Map.of("error", "Некорректный запрос", "message", e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleException(Exception e) {
+        return Map.of("error", "Внутренняя ошибка сервера", "message", e.getMessage());
     }
 }
 
