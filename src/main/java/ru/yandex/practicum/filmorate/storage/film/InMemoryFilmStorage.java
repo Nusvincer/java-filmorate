@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -22,26 +23,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilm(Film film) {
+    public Optional<Film> updateFilm(Film film) {
         if (!films.containsKey(film.getId())) {
-            throw new IllegalArgumentException("Фильм с таким ID не найден.");
+            return Optional.empty();
         }
         film.validate();
         films.put(film.getId(), film);
-        return film;
+        return Optional.of(film);
     }
 
     @Override
-    public Film getFilm(int id) {
-        if (!films.containsKey(id)) {
-            throw new IllegalArgumentException("Фильм с таким ID не найден.");
-        }
-        return films.get(id);
-    }
-
-    @Override
-    public void deleteFilm(int id) {
-        films.remove(id);
+    public Optional<Film> getFilm(int id) {
+        return Optional.ofNullable(films.get(id));
     }
 
     @Override

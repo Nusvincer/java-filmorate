@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -22,28 +23,20 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
+    public Optional<User> updateUser(User user) {
         if (!users.containsKey(user.getId())) {
-            throw new IllegalArgumentException("Пользователь с таким ID не найден.");
+            return Optional.empty();
         }
         user.validate();
         users.put(user.getId(), user);
-        return user;
+        return Optional.of(user);
     }
 
     @Override
-    public User getUser(int id) {
-        if (!users.containsKey(id)) {
-            throw new IllegalArgumentException("Пользователь с таким ID не найден.");
-        }
-        return users.get(id);
+    public Optional<User> getUser(int id) {
+        return Optional.ofNullable(users.get(id));
     }
-
-    @Override
-    public void deleteUser(int id) {
-        users.remove(id);
-    }
-
+    
     @Override
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());

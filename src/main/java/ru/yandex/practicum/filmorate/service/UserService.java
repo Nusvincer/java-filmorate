@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -21,7 +22,8 @@ public class UserService {
     }
 
     public User getUserById(int id) {
-        return userStorage.getUser(id);
+        return userStorage.getUser(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь с ID " + id + " не найден."));
     }
 
     public User createUser(User user) {
@@ -31,51 +33,36 @@ public class UserService {
 
     public User updateUser(User user) {
         user.validate();
-        return userStorage.updateUser(user);
+        return userStorage.updateUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь с ID " + user.getId() + " не найден."));
     }
 
     public void addFriend(int userId, int friendId) {
-        if (userId == friendId) {
-            throw new IllegalArgumentException("Пользователь не может добавить себя в друзья.");
-        }
-        User user = userStorage.getUser(userId);
-        User friend = userStorage.getUser(friendId);
-        if (user == null || friend == null) {
-            throw new IllegalArgumentException("Один из пользователей не найден.");
-        }
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         user.addFriend(friendId);
         friend.addFriend(userId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        User user = userStorage.getUser(userId);
-        User friend = userStorage.getUser(friendId);
-        if (user == null || friend == null) {
-            throw new IllegalArgumentException("Один из пользователей не найден.");
-        }
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
         user.removeFriend(friendId);
         friend.removeFriend(userId);
     }
 
     public Set<User> getFriends(int userId) {
-        User user = userStorage.getUser(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("Пользователь с таким ID не найден.");
-        }
-        return user.getFriends().stream()
-                .map(userStorage::getUser)
+        return getUserById(userId).getFriends().stream()
+                .map(this::getUserById)
                 .collect(Collectors.toSet());
     }
 
     public Set<User> getCommonFriends(int userId, int otherId) {
-        User user = userStorage.getUser(userId);
-        User otherUser = userStorage.getUser(otherId);
-        if (user == null || otherUser == null) {
-            throw new IllegalArgumentException("Один из пользователей не найден.");
-        }
-        return user.getFriends().stream()
-                .filter(otherUser.getFriends()::contains)
-                .map(userStorage::getUser)
+        Set<Integer> userFriends = getUserById(userId).getFriends();
+        Set<Integer> otherFriends = getUserById(otherId).getFriends();
+        return userFriends.stream()
+                .filter(otherFriends::contains)
+                .map(this::getUserById)
                 .collect(Collectors.toSet());
     }
 }
