@@ -35,8 +35,8 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Optional<User> getUser(int id) {
         return Optional.ofNullable(users.get(id));
-    }
-    
+    } //исправление для Checkstyle
+
     @Override
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
