@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.PriorityQueue;
 
 @Service
 public class FilmService {
@@ -39,21 +39,31 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        Film film = getFilmById(filmId);
-        userService.getUserById(userId);
+        Film film = validateFilmAndUserExistence(filmId, userId);
         film.addLike(userId);
     }
 
     public void removeLike(int filmId, int userId) {
-        Film film = getFilmById(filmId);
-        userService.getUserById(userId);
+        Film film = validateFilmAndUserExistence(filmId, userId);
         film.removeLike(userId);
     }
 
     public List<Film> getPopularFilms(int count) {
-        return filmStorage.getAllFilms().stream()
+        PriorityQueue<Film> topFilms = new PriorityQueue<>((f1, f2) -> Integer.compare(f1.getLikeCount(), f2.getLikeCount()));
+        for (Film film : filmStorage.getAllFilms()) {
+            topFilms.offer(film);
+            if (topFilms.size() > count) {
+                topFilms.poll();
+            }
+        }
+        return topFilms.stream()
                 .sorted((f1, f2) -> Integer.compare(f2.getLikeCount(), f1.getLikeCount()))
-                .limit(count)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    private Film validateFilmAndUserExistence(int filmId, int userId) {
+        Film film = getFilmById(filmId);
+        userService.getUserById(userId);
+        return film;
     }
 }

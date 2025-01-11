@@ -52,7 +52,28 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Set<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
-        return userService.getCommonFriends(id, otherId);
+    public List<SimpleUser> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        Set<User> commonFriends = userService.getCommonFriends(id, otherId);
+        return commonFriends.stream()
+                .map(user -> new SimpleUser(user.getId(), user.getName() != null ? user.getName() : user.getLogin()))
+                .toList();
+    }
+
+    public static class SimpleUser {
+        private final int id;
+        private final String name;
+
+        public SimpleUser(int id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }
