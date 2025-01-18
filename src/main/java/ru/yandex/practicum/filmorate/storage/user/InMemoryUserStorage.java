@@ -3,11 +3,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -35,10 +31,33 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Optional<User> getUser(int id) {
         return Optional.ofNullable(users.get(id));
-    } //исправление для Checkstyle
+    }
 
     @Override
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+        User user = getUser(userId).orElseThrow(() ->
+                new IllegalArgumentException("User with ID " + userId + " not found"));
+        User friend = getUser(friendId).orElseThrow(() ->
+                new IllegalArgumentException("User with ID " + friendId + " not found"));
+        user.addFriend(friendId);
+    }
+
+    @Override
+    public void removeFriend(int userId, int friendId) {
+        User user = getUser(userId).orElseThrow(() ->
+                new IllegalArgumentException("User with ID " + userId + " not found"));
+        user.removeFriend(friendId);
+    }
+
+    @Override
+    public Set<Integer> getFriends(int userId) {
+        User user = getUser(userId).orElseThrow(() ->
+                new IllegalArgumentException("User with ID " + userId + " not found"));
+        return user.getFriends();
     }
 }

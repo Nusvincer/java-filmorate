@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -13,11 +14,28 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
+
+    @JsonIgnore
     private final Set<Integer> friends = new HashSet<>();
 
+    public User(int id, String email, String login, String name, LocalDate birthday) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
+
+    public User(String email, String login, String name, LocalDate birthday) {
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
+
     public void validate() {
-        if (email == null || !email.contains("@")) {
-            throw new IllegalArgumentException("Электронная почта должна содержать символ '@'.");
+        if (email == null || !email.matches("^[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+            throw new IllegalArgumentException("Электронная почта должна быть валидной и содержать символ '@'.");
         }
         if (login == null || login.isBlank() || login.contains(" ")) {
             throw new IllegalArgumentException("Логин не может быть пустым или содержать пробелы.");

@@ -3,15 +3,13 @@ package ru.yandex.practicum.filmorate.storage.film;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Set<Integer>> likes = new HashMap<>();
     private int currentId = 1;
 
     @Override
@@ -19,6 +17,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         film.validate();
         film.setId(currentId++);
         films.put(film.getId(), film);
+        likes.put(film.getId(), new HashSet<>());
         return film;
     }
 
@@ -40,5 +39,34 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getAllFilms() {
         return new ArrayList<>(films.values());
+    }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+        Set<Integer> filmLikes = likes.get(filmId);
+        if (filmLikes == null) {
+            throw new IllegalArgumentException("Фильм с ID " + filmId + " не найден.");
+        }
+        filmLikes.add(userId);
+    }
+
+    @Override
+    public void removeLike(int filmId, int userId) {
+        Set<Integer> filmLikes = likes.get(filmId);
+        if (filmLikes == null) {
+            throw new IllegalArgumentException("Фильм с ID " + filmId + " не найден.");
+        }
+        filmLikes.remove(userId);
+    }
+
+    @Override
+    public List<Film> getPopularFilms(int count) {
+        return films.values().stream()
+                .sorted((f1, f2) -> Integer.compare(
+                        likes.getOrDefault(f2.getId(), Collections.emptySet()).size(),
+                        likes.getOrDefault(f1.getId(), Collections.emptySet()).size()
+                ))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }

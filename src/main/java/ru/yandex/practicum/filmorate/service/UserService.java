@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
 
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -38,28 +39,22 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.addFriend(friendId);
-        friend.addFriend(userId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
-        user.removeFriend(friendId);
-        friend.removeFriend(userId);
+        userStorage.removeFriend(userId, friendId);
     }
 
     public Set<User> getFriends(int userId) {
-        return getUserById(userId).getFriends().stream()
+        return userStorage.getFriends(userId).stream()
                 .map(this::getUserById)
                 .collect(Collectors.toSet());
     }
 
     public Set<User> getCommonFriends(int userId, int otherId) {
-        Set<Integer> userFriends = getUserById(userId).getFriends();
-        Set<Integer> otherFriends = getUserById(otherId).getFriends();
+        Set<Integer> userFriends = userStorage.getFriends(userId);
+        Set<Integer> otherFriends = userStorage.getFriends(otherId);
         return userFriends.stream()
                 .filter(otherFriends::contains)
                 .map(this::getUserById)
