@@ -9,5 +9,3 @@ public class FilmorateApplication {
 		SpringApplication.run(FilmorateApplication.class, args);
 	}
 }
-
-//комментарий для себя

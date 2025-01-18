@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -23,16 +25,23 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
-        return userService.getUserById(id);
+        try {
+            return userService.getUserById(id);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден", e);
+        }
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public User createUser(@RequestBody User user) {
+        user.validate();
         return userService.createUser(user);
     }
 
     @PutMapping
     public User updateUser(@RequestBody User user) {
+        user.validate();
         return userService.updateUser(user);
     }
 

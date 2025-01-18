@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.service.RatingService;
 
@@ -23,6 +25,10 @@ public class RatingController {
 
     @GetMapping("/{id}")
     public Rating getRatingById(@PathVariable int id) {
-        return ratingService.getRatingById(id);
+        try {
+            return ratingService.getRatingById(id);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Рейтинг не найден", e);
+        }
     }
 }

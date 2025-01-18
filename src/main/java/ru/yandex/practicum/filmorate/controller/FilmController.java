@@ -2,10 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-
 import java.util.List;
 
 @RestController
@@ -26,18 +27,25 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable int id) {
-        log.info("Получение фильма с ID: {}", id);
-        return filmService.getFilmById(id);
+        try {
+            log.info("Получение фильма с ID: {}", id);
+            return filmService.getFilmById(id);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Фильм не найден", e);
+        }
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Film createFilm(@RequestBody Film film) {
+        film.validate();
         log.info("Создание фильма: {}", film);
         return filmService.createFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
+        film.validate();
         log.info("Обновление фильма: {}", film);
         return filmService.updateFilm(film);
     }
@@ -56,7 +64,11 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        if (count <= 0) {
+            throw new IllegalArgumentException("Количество популярных фильмов должно быть положительным.");
+        }
         log.info("Получение популярных фильмов, количество: {}", count);
         return filmService.getPopularFilms(count);
     }
 }
+
