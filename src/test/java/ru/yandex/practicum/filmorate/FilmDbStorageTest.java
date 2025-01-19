@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 
@@ -18,6 +20,17 @@ class FilmDbStorageTest {
 
     @Autowired
     private FilmDbStorage filmDbStorage;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    public void setUp() {
+        jdbcTemplate.execute("DELETE FROM film_genres");
+        jdbcTemplate.execute("DELETE FROM likes");
+        jdbcTemplate.execute("DELETE FROM films");
+        jdbcTemplate.execute("ALTER TABLE films ALTER COLUMN id RESTART WITH 1");
+    }
 
     @Test
     void shouldAddAndGetFilm() {

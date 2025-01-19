@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.rating;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.util.List;
@@ -33,5 +34,10 @@ public class RatingDbStorage implements RatingStorage {
             }
             return Optional.empty();
         }, id);
+    }
+
+    public Rating findRatingOrThrow(int id) {
+        return getRatingById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Рейтинг с ID " + id + " не найден."));
     }
 }

@@ -25,10 +25,6 @@ public class GenreController {
 
     @GetMapping("/{id}")
     public Genre getGenreById(@PathVariable int id) {
-        try {
-            return genreService.getGenreById(id);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Жанр не найден", e);
-        }
+        return genreService.getGenreById(id);
     }
 }

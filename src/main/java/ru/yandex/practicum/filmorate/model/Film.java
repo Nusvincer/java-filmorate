@@ -42,6 +42,10 @@ public class Film {
         validateDescription();
         validateReleaseDate();
         validateDuration();
+
+        if (mpa == null || mpa.getId() == null) {
+            throw new IllegalArgumentException("MPA рейтинг обязателен для указания.");
+        }
     }
 
     private void validateName() {

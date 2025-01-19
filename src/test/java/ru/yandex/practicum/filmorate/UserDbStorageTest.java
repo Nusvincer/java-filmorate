@@ -29,6 +29,7 @@ public class UserDbStorageTest {
         jdbcTemplate.execute("DELETE FROM friends");
         jdbcTemplate.execute("DELETE FROM users");
         jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
+        System.out.println("Database cleaned and auto-increment reset.");
     }
 
     @Test
