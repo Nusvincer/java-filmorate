@@ -41,23 +41,27 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void addFriend(int userId, int friendId) {
         User user = getUser(userId).orElseThrow(() ->
-                new IllegalArgumentException("User with ID " + userId + " not found"));
+                new IllegalArgumentException("Пользователь с ID " + userId + " не найден"));
         User friend = getUser(friendId).orElseThrow(() ->
-                new IllegalArgumentException("User with ID " + friendId + " not found"));
+                new IllegalArgumentException("Пользователь с ID " + friendId + " не найден"));
         user.addFriend(friendId);
+        friend.addFriend(userId);
     }
 
     @Override
     public void removeFriend(int userId, int friendId) {
         User user = getUser(userId).orElseThrow(() ->
-                new IllegalArgumentException("User with ID " + userId + " not found"));
+                new IllegalArgumentException("Пользователь с ID " + userId + " не найден"));
+        User friend = getUser(friendId).orElseThrow(() ->
+                new IllegalArgumentException("Пользователь с ID " + friendId + " не найден"));
         user.removeFriend(friendId);
+        friend.removeFriend(userId);
     }
 
     @Override
     public Set<Integer> getFriends(int userId) {
         User user = getUser(userId).orElseThrow(() ->
-                new IllegalArgumentException("User with ID " + userId + " not found"));
+                new IllegalArgumentException("Пользователь с ID " + userId + " не найден"));
         return user.getFriends();
     }
 }

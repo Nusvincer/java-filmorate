@@ -6,6 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -34,14 +35,12 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@RequestBody User user) {
-        user.validate();
+    public User createUser(@Valid @RequestBody User user) {
         return userService.createUser(user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
-        user.validate();
+    public User updateUser(@Valid @RequestBody User user) {
         return userService.updateUser(user);
     }
 

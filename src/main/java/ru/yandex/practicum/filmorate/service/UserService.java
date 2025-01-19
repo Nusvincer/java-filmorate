@@ -28,12 +28,10 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        user.validate();
         return userStorage.addUser(user);
     }
 
     public User updateUser(User user) {
-        user.validate();
         return userStorage.updateUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь с ID " + user.getId() + " не найден."));
     }
@@ -55,6 +53,7 @@ public class UserService {
     public Set<User> getCommonFriends(int userId, int otherId) {
         Set<Integer> userFriends = userStorage.getFriends(userId);
         Set<Integer> otherFriends = userStorage.getFriends(otherId);
+
         return userFriends.stream()
                 .filter(otherFriends::contains)
                 .map(this::getUserById)
