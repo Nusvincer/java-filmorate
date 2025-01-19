@@ -24,6 +24,7 @@ public class User {
     private String name;
 
     @JsonProperty("birthday")
+    @Past(message = "Дата рождения должна быть в прошлом")
     private LocalDate birthday;
 
     private Set<Integer> friends = new HashSet<>();
@@ -64,7 +65,7 @@ public class User {
     }
 
     public String getName() {
-        return name != null && !name.isBlank() ? name : login;
+        return (name == null || name.isBlank()) ? login : name;
     }
 
     public void setName(String name) {
@@ -79,6 +80,10 @@ public class User {
         this.birthday = birthday;
     }
 
+    public Set<Integer> getFriends() {
+        return friends;
+    }
+
     public void setFriends(Set<Integer> friends) {
         this.friends = friends;
     }
@@ -89,25 +94,6 @@ public class User {
 
     public void removeFriend(int friendId) {
         friends.remove(friendId);
-    }
-
-    public Set<Integer> getFriends() {
-        return friends;
-    }
-
-    public void validate() {
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email не может быть пустым");
-        }
-        if (!email.matches(".+@.+\\..+")) {
-            throw new IllegalArgumentException("Email должен быть корректным");
-        }
-        if (login == null || login.isBlank()) {
-            throw new IllegalArgumentException("Логин не может быть пустым");
-        }
-        if (birthday != null && birthday.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Дата рождения должна быть в прошлом");
-        }
     }
 }
 

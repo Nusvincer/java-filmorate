@@ -27,12 +27,8 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable int id) {
-        try {
-            log.info("Получение фильма с ID: {}", id);
-            return filmService.getFilmById(id);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Фильм не найден", e);
-        }
+        log.info("Получение фильма с ID: {}", id);
+        return filmService.getFilmById(id);
     }
 
     @PostMapping

@@ -12,7 +12,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addUser(User user) {
-        user.validate();
+        validateUser(user);
         user.setId(currentId++);
         users.put(user.getId(), user);
         return user;
@@ -23,7 +23,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (!users.containsKey(user.getId())) {
             return Optional.empty();
         }
-        user.validate();
+        validateUser(user);
         users.put(user.getId(), user);
         return Optional.of(user);
     }
@@ -63,5 +63,17 @@ public class InMemoryUserStorage implements UserStorage {
         User user = getUser(userId).orElseThrow(() ->
                 new IllegalArgumentException("Пользователь с ID " + userId + " не найден"));
         return user.getFriends();
+    }
+
+    private void validateUser(User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().matches(".+@.+\\..+")) {
+            throw new IllegalArgumentException("Email должен быть корректным");
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank()) {
+            throw new IllegalArgumentException("Логин не может быть пустым");
+        }
+        if (user.getBirthday() != null && user.getBirthday().isAfter(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Дата рождения должна быть в прошлом");
+        }
     }
 }

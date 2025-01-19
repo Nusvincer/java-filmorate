@@ -61,24 +61,38 @@ public class UserService {
             throw new IllegalArgumentException("Нельзя добавить себя в друзья.");
         }
 
+        if (user.getFriends().contains(friendId)) {
+            log.warn("Пользователь с ID {} уже является другом пользователя с ID {}", friendId, userId);
+            return;
+        }
+
         userStorage.addFriend(userId, friendId);
-        log.info("Пользователь с ID {} успешно добавлен в друзья к пользователю с ID {}", friendId, userId);
+        userStorage.addFriend(friendId, userId);
+
+        user.addFriend(friendId);
+        friend.addFriend(userId);
+
+        log.info("Пользователь с ID {} и пользователь с ID {} теперь друзья", userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
         log.info("Удаление из друзей пользователя с ID {} у пользователя с ID {}", friendId, userId);
 
-        getUserById(userId);
-        getUserById(friendId);
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
 
-        Set<Integer> friends = userStorage.getFriends(userId);
-        if (!friends.contains(friendId)) {
+        if (!user.getFriends().contains(friendId)) {
             log.warn("Пользователь с ID {} не является другом пользователя с ID {}", friendId, userId);
             throw new ResourceNotFoundException("Пользователь с ID " + friendId + " не найден среди друзей.");
         }
 
         userStorage.removeFriend(userId, friendId);
-        log.info("Пользователь с ID {} успешно удалён из друзей у пользователя с ID {}", friendId, userId);
+        userStorage.removeFriend(friendId, userId);
+
+        user.removeFriend(friendId);
+        friend.removeFriend(userId);
+
+        log.info("Пользователь с ID {} и пользователь с ID {} больше не друзья", userId, friendId);
     }
 
     public Set<User> getFriends(int userId) {

@@ -25,10 +25,6 @@ public class RatingController {
 
     @GetMapping("/{id}")
     public Rating getRatingById(@PathVariable int id) {
-        try {
-            return ratingService.getRatingById(id);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Рейтинг не найден", e);
-        }
+        return ratingService.getRatingById(id);
     }
 }

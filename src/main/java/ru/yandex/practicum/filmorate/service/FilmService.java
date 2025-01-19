@@ -6,9 +6,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -33,11 +37,20 @@ public class FilmService {
 
     public Film getFilmById(int id) {
         log.info("Получение фильма с ID {}", id);
-        return filmStorage.getFilm(id)
+        Film film = filmStorage.getFilm(id)
                 .orElseThrow(() -> {
                     log.warn("Фильм с ID {} не найден", id);
                     return new ResourceNotFoundException("Фильм с ID " + id + " не найден.");
                 });
+
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            List<Genre> sortedGenres = new ArrayList<>(film.getGenres());
+            sortedGenres.sort(Comparator.comparing(Genre::getId));
+            film.setGenres(new HashSet<>(sortedGenres));
+        }
+
+        log.info("Фильм с ID {} успешно получен", id);
+        return film;
     }
 
     public Film createFilm(Film film) {
@@ -91,7 +104,8 @@ public class FilmService {
                 if (genre.getId() == null) {
                     throw new ResourceNotFoundException("Жанр не содержит ID.");
                 }
-                if (genreService.getGenreById(genre.getId()) == null) {
+                Genre retrievedGenre = genreService.getGenreById(genre.getId());
+                if (retrievedGenre == null) {
                     throw new ResourceNotFoundException("Жанр с ID " + genre.getId() + " не найден.");
                 }
             });

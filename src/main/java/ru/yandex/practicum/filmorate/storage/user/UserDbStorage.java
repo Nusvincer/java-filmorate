@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
@@ -81,14 +82,21 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, userId, friendId);
+        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?), (?, ?)";
+        jdbcTemplate.update(sql, userId, friendId, friendId, userId);
     }
 
     @Override
     public void removeFriend(int userId, int friendId) {
-        String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-        jdbcTemplate.update(sql, userId, friendId);
+        String sqlCheck = "SELECT COUNT(*) FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+        Integer count = jdbcTemplate.queryForObject(sqlCheck, Integer.class, userId, friendId, friendId, userId);
+
+        if (count == null || count == 0) {
+            throw new ResourceNotFoundException("Связь между пользователями " + userId + " и " + friendId + " не найдена.");
+        }
+
+        String sqlDelete = "DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+        jdbcTemplate.update(sqlDelete, userId, friendId, friendId, userId);
     }
 
     @Override
@@ -98,3 +106,4 @@ public class UserDbStorage implements UserStorage {
         return new HashSet<>(friendIds);
     }
 }
+
