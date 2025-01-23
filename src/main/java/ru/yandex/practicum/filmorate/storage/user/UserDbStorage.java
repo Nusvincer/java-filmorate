@@ -82,21 +82,21 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?), (?, ?)";
-        jdbcTemplate.update(sql, userId, friendId, friendId, userId);
+        String sqlCheck = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sqlCheck, Integer.class, userId, friendId);
+
+        if (count != null && count > 0) {
+            throw new IllegalArgumentException("Связь уже существует.");
+        }
+
+        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
     public void removeFriend(int userId, int friendId) {
-        String sqlCheck = "SELECT COUNT(*) FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
-        Integer count = jdbcTemplate.queryForObject(sqlCheck, Integer.class, userId, friendId, friendId, userId);
-
-        if (count == null || count == 0) {
-            throw new ResourceNotFoundException("Связь между пользователями " + userId + " и " + friendId + " не найдена.");
-        }
-
-        String sqlDelete = "DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
-        jdbcTemplate.update(sqlDelete, userId, friendId, friendId, userId);
+        String sql = "DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+        jdbcTemplate.update(sql, userId, friendId, friendId, userId);
     }
 
     @Override

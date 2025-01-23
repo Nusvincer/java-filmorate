@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -119,7 +120,8 @@ public class UserService {
 
         return userFriends.stream()
                 .filter(otherFriends::contains)
-                .map(this::getUserById)
+                .map(friendId -> userStorage.getUser(friendId).orElse(null))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }
 }
