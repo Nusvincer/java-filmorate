@@ -22,11 +22,9 @@ class GenreDbStorageTest {
     @Test
     void shouldGetAllGenres() {
         List<Genre> genres = genreDbStorage.getAllGenres();
-        
+
         assertThat(genres).isNotEmpty();
-        assertThat(genres)
-                .extracting(Genre::getName)
-                .containsExactlyInAnyOrder("Комедия", "Драма", "Мультфильм", "Триллер", "Документальный", "Боевик");
+        assertThat(genres).extracting(Genre::getName).containsExactlyInAnyOrder("Комедия", "Драма", "Мультфильм", "Триллер", "Документальный", "Боевик");
     }
 
     @Test
