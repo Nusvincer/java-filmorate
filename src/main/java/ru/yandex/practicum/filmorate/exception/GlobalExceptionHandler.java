@@ -110,4 +110,14 @@ public class GlobalExceptionHandler {
                         "message", ex.getMessage()
                 ));
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, String>> handleBadRequestException(BadRequestException ex) {
+        log.warn("Некорректные данные: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", "Некорректные данные",
+                        "message", ex.getMessage()
+                ));
+    }
 }

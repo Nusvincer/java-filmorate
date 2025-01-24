@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -110,18 +111,18 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             film.getGenres().forEach(genre -> {
                 if (genre.getId() == null) {
-                    throw new IllegalArgumentException("Жанр не содержит ID.");
+                    throw new BadRequestException("Жанр не содержит ID.");
                 }
                 Genre retrievedGenre = genreService.getGenreById(genre.getId());
                 if (retrievedGenre == null) {
-                    throw new IllegalArgumentException("Жанр с ID " + genre.getId() + " не найден.");
+                    throw new BadRequestException("Жанр с ID " + genre.getId() + " не найден.");
                 }
             });
         }
 
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             if (ratingService.getRatingById(film.getMpa().getId()) == null) {
-                throw new IllegalArgumentException("Рейтинг с ID " + film.getMpa().getId() + " не найден.");
+                throw new BadRequestException("Рейтинг с ID " + film.getMpa().getId() + " не найден.");
             }
         }
     }
