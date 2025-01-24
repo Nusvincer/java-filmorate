@@ -83,7 +83,7 @@ public class UserService {
 
         if (!userStorage.getFriends(userId).contains(friendId)) {
             log.warn("Пользователь с ID {} не является другом пользователя с ID {}", friendId, userId);
-            throw new ResourceNotFoundException("Пользователь с ID " + friendId + " не найден среди друзей.");
+            return;
         }
 
         userStorage.removeFriend(userId, friendId);
