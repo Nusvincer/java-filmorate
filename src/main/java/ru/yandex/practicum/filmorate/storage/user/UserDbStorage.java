@@ -85,7 +85,7 @@ public class UserDbStorage implements UserStorage {
         Integer count = jdbcTemplate.queryForObject(sqlCheck, Integer.class, userId, friendId);
 
         if (count != null && count > 0) {
-            throw new IllegalArgumentException("Связь уже существует.");
+            throw new IllegalArgumentException("Пользователь с ID " + friendId + " уже является другом пользователя с ID " + userId);
         }
 
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
@@ -94,8 +94,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void removeFriend(int userId, int friendId) {
-        String sql = "DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
-        jdbcTemplate.update(sql, userId, friendId, friendId, userId);
+        String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override

@@ -68,19 +68,15 @@ public class UserService {
         }
 
         userStorage.addFriend(userId, friendId);
-        userStorage.addFriend(friendId, userId);
-
         user.addFriend(friendId);
-        friend.addFriend(userId);
 
-        log.info("Пользователь с ID {} и пользователь с ID {} теперь друзья", userId, friendId);
+        log.info("Пользователь с ID {} добавил в друзья пользователя с ID {}", userId, friendId);
     }
 
     public void removeFriend(int userId, int friendId) {
         log.info("Удаление из друзей пользователя с ID {} у пользователя с ID {}", friendId, userId);
 
         User user = getUserById(userId);
-        User friend = getUserById(friendId);
 
         if (!user.getFriends().contains(friendId)) {
             log.warn("Пользователь с ID {} не является другом пользователя с ID {}", friendId, userId);
@@ -88,12 +84,9 @@ public class UserService {
         }
 
         userStorage.removeFriend(userId, friendId);
-        userStorage.removeFriend(friendId, userId);
-
         user.removeFriend(friendId);
-        friend.removeFriend(userId);
 
-        log.info("Пользователь с ID {} и пользователь с ID {} больше не друзья", userId, friendId);
+        log.info("Пользователь с ID {} удалил из друзей пользователя с ID {}", userId, friendId);
     }
 
     public Set<User> getFriends(int userId) {
