@@ -121,9 +121,8 @@ public class FilmService {
         }
 
         if (film.getMpa() != null && film.getMpa().getId() != null) {
-            Rating rating = ratingService.getRatingById(film.getMpa().getId());
-            if (rating == null) {
-                throw new ResourceNotFoundException("Рейтинг с ID " + film.getMpa().getId() + " не найден.");
+            if (ratingService.getRatingById(film.getMpa().getId()) == null) {
+                throw new IllegalArgumentException("Рейтинг с ID " + film.getMpa().getId() + " не найден."); 
             }
         }
     }
