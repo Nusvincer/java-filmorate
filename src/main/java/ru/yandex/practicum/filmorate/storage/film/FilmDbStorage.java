@@ -48,7 +48,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getAllFilms() {
         String sql = """
-        SELECT f.*, r.name AS rating_name, 
+        SELECT f.*, r.name AS rating_name,
                g.id AS genre_id, g.name AS genre_name
         FROM films f
         LEFT JOIN ratings r ON f.rating_id = r.id
@@ -98,7 +98,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getFilm(int id) {
         String sql = """
-        SELECT f.*, r.name AS rating_name, 
+        SELECT f.*, r.name AS rating_name,
                g.id AS genre_id, g.name AS genre_name
         FROM films f
         LEFT JOIN ratings r ON f.rating_id = r.id
