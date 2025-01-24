@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -109,6 +110,10 @@ public class FilmService {
 
     private void validateGenresAndRating(Film film) {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            film.setGenres(new ArrayList<>(film.getGenres().stream()
+                    .distinct()
+                    .toList()));
+
             film.getGenres().forEach(genre -> {
                 if (genre.getId() == null) {
                     throw new BadRequestException("Жанр не содержит ID.");
