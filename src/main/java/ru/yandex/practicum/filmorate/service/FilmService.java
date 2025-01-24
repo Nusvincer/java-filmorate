@@ -11,9 +11,7 @@ import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -45,9 +43,7 @@ public class FilmService {
                 });
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            List<Genre> sortedGenres = new ArrayList<>(film.getGenres());
-            sortedGenres.sort(Comparator.comparing(Genre::getId));
-            film.setGenres(new HashSet<>(sortedGenres));
+            film.getGenres().sort(Comparator.comparing(Genre::getId));
         }
 
         log.info("Фильм с ID {} успешно получен", id);
@@ -76,6 +72,11 @@ public class FilmService {
                     log.warn("Фильм с ID {} не найден для обновления", film.getId());
                     return new ResourceNotFoundException("Фильм с ID " + film.getId() + " не найден.");
                 });
+
+        if (updatedFilm.getGenres() != null && !updatedFilm.getGenres().isEmpty()) {
+            updatedFilm.getGenres().sort(Comparator.comparing(Genre::getId));
+        }
+
         log.info("Фильм успешно обновлен: {}", updatedFilm);
         return updatedFilm;
     }

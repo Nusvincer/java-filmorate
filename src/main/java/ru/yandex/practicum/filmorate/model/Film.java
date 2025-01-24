@@ -4,8 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class Film {
@@ -27,7 +27,7 @@ public class Film {
     @NotNull(message = "MPA рейтинг обязателен для указания.")
     private Rating mpa;
 
-    private Set<Genre> genres = new HashSet<>();
+    private List<Genre> genres = new ArrayList<>(); // Изменено с Set на List
 
     public Film(int id, String name, String description, LocalDate releaseDate, int duration) {
         this.id = id;
@@ -37,7 +37,7 @@ public class Film {
         this.duration = duration;
     }
 
-    public void setGenres(Set<Genre> genres) {
-        this.genres = genres != null ? genres : new HashSet<>();
+    public void setGenres(List<Genre> genres) {
+        this.genres = genres != null ? genres : new ArrayList<>();
     }
 }
