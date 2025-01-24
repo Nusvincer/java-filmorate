@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -54,9 +56,10 @@ public class FilmService {
         return film;
     }
 
-    public Film createFilm(@Valid Film film) {
+    public Film createFilm(Film film) {
         log.info("Создание нового фильма: {}", film);
 
+        validateReleaseDate(film);
         validateGenresAndRating(film);
 
         Film createdFilm = filmStorage.addFilm(film);
@@ -64,9 +67,10 @@ public class FilmService {
         return createdFilm;
     }
 
-    public Film updateFilm(@Valid Film film) {
+    public Film updateFilm(Film film) {
         log.info("Обновление фильма с ID {}", film.getId());
 
+        validateReleaseDate(film);
         validateGenresAndRating(film);
 
         Film updatedFilm = filmStorage.updateFilm(film)
@@ -95,6 +99,13 @@ public class FilmService {
     public List<Film> getPopularFilms(int count) {
         log.info("Получение {} популярных фильмов", count);
         return filmStorage.getPopularFilms(count);
+    }
+
+    private void validateReleaseDate(Film film) {
+        LocalDate earliestDate = LocalDate.of(1895, 12, 28);
+        if (film.getReleaseDate().isBefore(earliestDate)) {
+            throw new IllegalArgumentException("Дата релиза не может быть раньше 28 декабря 1895 года.");
+        }
     }
 
     private void validateGenresAndRating(Film film) {
