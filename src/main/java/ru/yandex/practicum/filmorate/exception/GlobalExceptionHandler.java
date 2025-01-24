@@ -13,6 +13,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -95,6 +97,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
                         "error", "Внутренняя ошибка сервера",
+                        "message", ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
+        log.warn("Исключение с кодом {}: {}", ex.getStatusCode(), ex.getReason());
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(Map.of(
+                        "error", ex.getReason(),
                         "message", ex.getMessage()
                 ));
     }
