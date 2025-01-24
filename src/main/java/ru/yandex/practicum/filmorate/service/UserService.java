@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -47,7 +49,7 @@ public class UserService {
         return userStorage.updateUser(user)
                 .orElseThrow(() -> {
                     log.warn("Пользователь с ID {} не найден для обновления", user.getId());
-                    return new ResourceNotFoundException("Пользователь с ID " + user.getId() + " не найден.");
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь с ID " + user.getId() + " не найден.");
                 });
     }
 
@@ -68,8 +70,6 @@ public class UserService {
         }
 
         userStorage.addFriend(userId, friendId);
-        user.addFriend(friendId);
-
         log.info("Пользователь с ID {} добавил в друзья пользователя с ID {}", userId, friendId);
     }
 
