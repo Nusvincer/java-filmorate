@@ -10,8 +10,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import jakarta.validation.Valid;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
