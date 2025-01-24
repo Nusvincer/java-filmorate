@@ -106,7 +106,7 @@ public class GlobalExceptionHandler {
         log.warn("Исключение с кодом {}: {}", ex.getStatusCode(), ex.getReason());
         return ResponseEntity.status(ex.getStatusCode())
                 .body(Map.of(
-                        "error", ex.getReason(),
+                        "error", ex.getReason() != null ? ex.getReason() : "Неизвестная ошибка",
                         "message", ex.getMessage()
                 ));
     }
