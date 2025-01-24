@@ -14,7 +14,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        film.validate();
         film.setId(currentId++);
         films.put(film.getId(), film);
         likes.put(film.getId(), new HashSet<>());
@@ -26,7 +25,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (!films.containsKey(film.getId())) {
             return Optional.empty();
         }
-        film.validate();
         films.put(film.getId(), film);
         return Optional.of(film);
     }

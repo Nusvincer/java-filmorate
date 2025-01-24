@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -53,10 +54,9 @@ public class FilmService {
         return film;
     }
 
-    public Film createFilm(Film film) {
+    public Film createFilm(@Valid Film film) {
         log.info("Создание нового фильма: {}", film);
 
-        film.validate();
         validateGenresAndRating(film);
 
         Film createdFilm = filmStorage.addFilm(film);
@@ -64,10 +64,9 @@ public class FilmService {
         return createdFilm;
     }
 
-    public Film updateFilm(Film film) {
+    public Film updateFilm(@Valid Film film) {
         log.info("Обновление фильма с ID {}", film.getId());
 
-        film.validate();
         validateGenresAndRating(film);
 
         Film updatedFilm = filmStorage.updateFilm(film)
@@ -111,13 +110,11 @@ public class FilmService {
             });
         }
 
-        if (film.getMpa() == null || film.getMpa().getId() == null) {
-            throw new IllegalArgumentException("MPA рейтинг обязателен для указания.");
-        }
-
-        Rating rating = ratingService.getRatingById(film.getMpa().getId());
-        if (rating == null) {
-            throw new ResourceNotFoundException("Рейтинг с ID " + film.getMpa().getId() + " не найден.");
+        if (film.getMpa() != null && film.getMpa().getId() != null) {
+            Rating rating = ratingService.getRatingById(film.getMpa().getId());
+            if (rating == null) {
+                throw new ResourceNotFoundException("Рейтинг с ID " + film.getMpa().getId() + " не найден.");
+            }
         }
     }
 }

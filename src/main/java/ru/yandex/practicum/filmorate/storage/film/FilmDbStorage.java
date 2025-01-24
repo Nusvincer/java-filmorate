@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -8,10 +9,8 @@ import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.*;
 
 @Repository("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
@@ -48,45 +47,107 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAllFilms() {
-        String sql = "SELECT f.*, r.name AS rating_name FROM films f " +
-                "LEFT JOIN ratings r ON f.rating_id = r.id";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> {
-            Film film = new Film(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    rs.getDate("release_date").toLocalDate(),
-                    rs.getInt("duration")
-            );
-            film.setMpa(rs.getInt("rating_id") != 0
-                    ? new Rating(rs.getInt("rating_id"), rs.getString("rating_name"))
-                    : null);
-            film.setGenres(getGenresByFilmId(rs.getInt("id")));
-            return film;
-        });
+        String sql = """
+        SELECT f.*, r.name AS rating_name, 
+               g.id AS genre_id, g.name AS genre_name
+        FROM films f
+        LEFT JOIN ratings r ON f.rating_id = r.id
+        LEFT JOIN film_genres fg ON f.id = fg.film_id
+        LEFT JOIN genres g ON fg.genre_id = g.id
+    """;
+
+        Map<Integer, Film> filmsMap = new HashMap<>();
+
+        try {
+            jdbcTemplate.query(sql, rs -> {
+                int filmId = rs.getInt("id");
+                Film film = filmsMap.computeIfAbsent(filmId, id -> {
+                    try {
+                        Film newFilm = new Film(
+                                id,
+                                rs.getString("name"),
+                                rs.getString("description"),
+                                rs.getDate("release_date").toLocalDate(),
+                                rs.getInt("duration")
+                        );
+                        newFilm.setMpa(rs.getInt("rating_id") != 0
+                                ? new Rating(rs.getInt("rating_id"), rs.getString("rating_name"))
+                                : null);
+                        return newFilm;
+                    } catch (SQLException e) {
+                        throw new RuntimeException("Ошибка при создании фильма", e);
+                    }
+                });
+
+                try {
+                    int genreId = rs.getInt("genre_id");
+                    if (!rs.wasNull()) {
+                        film.getGenres().add(new Genre(genreId, rs.getString("genre_name")));
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException("Ошибка при добавлении жанра", e);
+                }
+            });
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Ошибка выполнения запроса", e);
+        }
+
+        return new ArrayList<>(filmsMap.values());
     }
 
     @Override
     public Optional<Film> getFilm(int id) {
-        String sql = "SELECT f.*, r.name AS rating_name FROM films f " +
-                "LEFT JOIN ratings r ON f.rating_id = r.id WHERE f.id = ?";
-        return jdbcTemplate.query(sql, rs -> {
-            if (rs.next()) {
-                Film film = new Film(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("description"),
-                        rs.getDate("release_date").toLocalDate(),
-                        rs.getInt("duration")
-                );
-                film.setMpa(rs.getInt("rating_id") != 0
-                        ? new Rating(rs.getInt("rating_id"), rs.getString("rating_name"))
-                        : null);
-                film.setGenres(getGenresByFilmId(rs.getInt("id")));
-                return Optional.of(film);
+        String sql = """
+        SELECT f.*, r.name AS rating_name, 
+               g.id AS genre_id, g.name AS genre_name
+        FROM films f
+        LEFT JOIN ratings r ON f.rating_id = r.id
+        LEFT JOIN film_genres fg ON f.id = fg.film_id
+        LEFT JOIN genres g ON fg.genre_id = g.id
+        WHERE f.id = ?
+    """;
+
+        Map<Integer, Film> filmsMap = new HashMap<>();
+
+        jdbcTemplate.query(connection -> {
+            var preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            return preparedStatement;
+        }, rs -> {
+            try {
+                int filmId = rs.getInt("id");
+                Film film = filmsMap.computeIfAbsent(filmId, fid -> {
+                    try {
+                        Film newFilm = new Film(
+                                fid,
+                                rs.getString("name"),
+                                rs.getString("description"),
+                                rs.getDate("release_date").toLocalDate(),
+                                rs.getInt("duration")
+                        );
+                        newFilm.setMpa(rs.getInt("rating_id") != 0
+                                ? new Rating(rs.getInt("rating_id"), rs.getString("rating_name"))
+                                : null);
+                        return newFilm;
+                    } catch (SQLException e) {
+                        throw new RuntimeException("Ошибка при создании объекта Film", e);
+                    }
+                });
+
+                try {
+                    int genreId = rs.getInt("genre_id");
+                    if (!rs.wasNull()) {
+                        film.getGenres().add(new Genre(genreId, rs.getString("genre_name")));
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException("Ошибка при добавлении жанра", e);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Ошибка при обработке ResultSet", e);
             }
-            return Optional.empty();
-        }, id);
+        });
+
+        return Optional.ofNullable(filmsMap.get(id));
     }
 
     @Override
