@@ -39,9 +39,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.warn("Некорректный запрос: {}", ex.getMessage());
-        return ResponseEntity.badRequest()
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
-                        "error", "Некорректный запрос",
+                        "error", "Некорректные данные",
                         "message", ex.getMessage()
                 ));
     }

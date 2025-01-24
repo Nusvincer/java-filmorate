@@ -110,11 +110,11 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             film.getGenres().forEach(genre -> {
                 if (genre.getId() == null) {
-                    throw new ResourceNotFoundException("Жанр не содержит ID.");
+                    throw new IllegalArgumentException("Жанр не содержит ID.");
                 }
                 Genre retrievedGenre = genreService.getGenreById(genre.getId());
                 if (retrievedGenre == null) {
-                    throw new ResourceNotFoundException("Жанр с ID " + genre.getId() + " не найден.");
+                    throw new IllegalArgumentException("Жанр с ID " + genre.getId() + " не найден.");
                 }
             });
         }
