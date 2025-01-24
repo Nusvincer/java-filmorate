@@ -36,7 +36,8 @@ public class FilmDbStorage implements FilmStorage {
             return ps;
         }, keyHolder);
 
-        int filmId = Optional.ofNullable(keyHolder.getKey()).map(Number::intValue).orElseThrow(() -> new IllegalStateException("Не удалось сохранить фильм."));
+        int filmId = Optional.ofNullable(keyHolder.getKey()).map(Number::intValue)
+                .orElseThrow(() -> new IllegalStateException("Не удалось сохранить фильм."));
         film.setId(filmId);
 
         updateFilmGenres(film);
@@ -46,15 +47,16 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getAllFilms() {
         String sql = """
-                    SELECT f.*, r.name AS rating_name,
-                           g.id AS genre_id, g.name AS genre_name
-                    FROM films f
-                    LEFT JOIN ratings r ON f.rating_id = r.id
-                    LEFT JOIN film_genres fg ON f.id = fg.film_id
-                    LEFT JOIN genres g ON fg.genre_id = g.id
+                SELECT f.*, r.name AS rating_name,
+                       g.id AS genre_id, g.name AS genre_name
+                FROM films f
+                LEFT JOIN ratings r ON f.rating_id = r.id
+                LEFT JOIN film_genres fg ON f.id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.id
+                ORDER BY f.id, g.id
                 """;
 
-        Map<Integer, Film> filmsMap = new HashMap<>();
+        Map<Integer, Film> filmsMap = new LinkedHashMap<>();
 
         try {
             jdbcTemplate.query(sql, rs -> {
@@ -88,13 +90,14 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getFilm(int id) {
         String sql = """
-                    SELECT f.*, r.name AS rating_name,
-                           g.id AS genre_id, g.name AS genre_name
-                    FROM films f
-                    LEFT JOIN ratings r ON f.rating_id = r.id
-                    LEFT JOIN film_genres fg ON f.id = fg.film_id
-                    LEFT JOIN genres g ON fg.genre_id = g.id
-                    WHERE f.id = ?
+                SELECT f.*, r.name AS rating_name,
+                       g.id AS genre_id, g.name AS genre_name
+                FROM films f
+                LEFT JOIN ratings r ON f.rating_id = r.id
+                LEFT JOIN film_genres fg ON f.id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.id
+                WHERE f.id = ?
+                ORDER BY g.id
                 """;
 
         Map<Integer, Film> filmsMap = new HashMap<>();
@@ -159,7 +162,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilms(int count) {
-        String sql = "SELECT f.*, r.name AS rating_name, COUNT(l.user_id) AS likes " + "FROM films f " + "LEFT JOIN likes l ON f.id = l.film_id " + "LEFT JOIN ratings r ON f.rating_id = r.id " + "GROUP BY f.id, r.name " + "ORDER BY likes DESC " + "LIMIT ?";
+        String sql = "SELECT f.*, r.name AS rating_name, COUNT(l.user_id) AS likes " +
+                "FROM films f " +
+                "LEFT JOIN likes l ON f.id = l.film_id " +
+                "LEFT JOIN ratings r ON f.rating_id = r.id " +
+                "GROUP BY f.id, r.name " +
+                "ORDER BY likes DESC " +
+                "LIMIT ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Film film = new Film(rs.getInt("id"), rs.getString("name"), rs.getString("description"), rs.getDate("release_date").toLocalDate(), rs.getInt("duration"));
             film.setMpa(rs.getInt("rating_id") != 0 ? new Rating(rs.getInt("rating_id"), rs.getString("rating_name")) : null);
@@ -182,8 +191,11 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Set<Genre> getGenresByFilmId(int filmId) {
-        String sql = "SELECT g.id, g.name FROM film_genres fg " + "JOIN genres g ON fg.genre_id = g.id " + "WHERE fg.film_id = ? ORDER BY g.id";
-        List<Genre> genres = jdbcTemplate.query(sql, (rs, rowNum) -> new Genre(rs.getInt("id"), rs.getString("name")), filmId);
+        String sql = "SELECT g.id, g.name FROM film_genres fg " +
+                "JOIN genres g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id = ? ORDER BY g.id";
+        List<Genre> genres = jdbcTemplate.query(sql, (rs, rowNum) ->
+                new Genre(rs.getInt("id"), rs.getString("name")), filmId);
         return new LinkedHashSet<>(genres);
     }
 }
