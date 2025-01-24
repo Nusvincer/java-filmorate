@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
@@ -122,7 +121,7 @@ public class FilmService {
 
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             if (ratingService.getRatingById(film.getMpa().getId()) == null) {
-                throw new IllegalArgumentException("Рейтинг с ID " + film.getMpa().getId() + " не найден."); 
+                throw new IllegalArgumentException("Рейтинг с ID " + film.getMpa().getId() + " не найден.");
             }
         }
     }
