@@ -3,11 +3,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -16,7 +12,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addUser(User user) {
-        user.validate();
+        validateUser(user);
         user.setId(currentId++);
         users.put(user.getId(), user);
         return user;
@@ -27,7 +23,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (!users.containsKey(user.getId())) {
             return Optional.empty();
         }
-        user.validate();
+        validateUser(user);
         users.put(user.getId(), user);
         return Optional.of(user);
     }
@@ -35,10 +31,55 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Optional<User> getUser(int id) {
         return Optional.ofNullable(users.get(id));
-    } //исправление для Checkstyle
+    }
 
     @Override
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
+    }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+        User user = getUser(userId).orElseThrow(() ->
+                new IllegalArgumentException("Пользователь с ID " + userId + " не найден"));
+        User friend = getUser(friendId).orElseThrow(() ->
+                new IllegalArgumentException("Пользователь с ID " + friendId + " не найден"));
+
+        if (user.getFriends().contains(friendId)) {
+            throw new IllegalArgumentException("Пользователь с ID " + friendId + " уже в друзьях у пользователя с ID " + userId);
+        }
+
+        user.addFriend(friendId);
+    }
+
+    @Override
+    public void removeFriend(int userId, int friendId) {
+        User user = getUser(userId).orElseThrow(() ->
+                new IllegalArgumentException("Пользователь с ID " + userId + " не найден"));
+
+        if (!user.getFriends().contains(friendId)) {
+            throw new IllegalArgumentException("Пользователь с ID " + friendId + " не является другом пользователя с ID " + userId);
+        }
+
+        user.removeFriend(friendId);
+    }
+
+    @Override
+    public Set<Integer> getFriends(int userId) {
+        User user = getUser(userId).orElseThrow(() ->
+                new IllegalArgumentException("Пользователь с ID " + userId + " не найден"));
+        return user.getFriends();
+    }
+
+    private void validateUser(User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().matches(".+@.+\\..+")) {
+            throw new IllegalArgumentException("Email должен быть корректным");
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank()) {
+            throw new IllegalArgumentException("Логин не может быть пустым");
+        }
+        if (user.getBirthday() != null && user.getBirthday().isAfter(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Дата рождения должна быть в прошлом");
+        }
     }
 }
